@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vanilla App Template</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"
+    />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/iziToast.min.css" />
+  </head>
+  <body>
+    <section class="page-section">
+      <div class="container">
+        <form class="form">
+          <label class="form-label"
+            ><input
+              required
+              type="text"
+              placeholder="Search images..."
+              name="search"
+              class="form-input"
+            />
+          </label>
+          <button class="form-button" type="submit">Search</button>
+        </form>
+        <span class="loader"></span>
+        <ul class="gallery"></ul>
+      </div>
+    </section>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
