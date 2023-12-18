@@ -23,7 +23,7 @@
 }
 .container {
   max-width: 1440px;
-  padding: 36px 80px;
+  padding: 35px 80px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -130,7 +130,7 @@
   transform: scale(1.05);
 }
 .download-more {
-  width: 150px;
+  width: 125px;
   height: 40px;
   font-family: Montserrat, sans-serif;
   font-size: 16px;
@@ -145,13 +145,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin-left: auto;
   margin-right: auto;
   display: none;
+  transition: background-color 250ms linear;
 }
+
 .is-visibal {
   display: flex;
+}
+.download-more:hover {
+  background-color: #6c8cff;
 }
 .page-section {
   padding-bottom: 35px;
@@ -160,7 +164,7 @@
 .loader {
   margin-left: auto;
   margin-right: auto;
-  margin-top: 100px;
+  margin-top: 30px;
   display: block;
   position: relative;
   height: 20px;

@@ -1,150 +1,98 @@
 'use strict';
-let indexImage = 0;
-let objectFromServer;
+let curentPage;
+let userText;
+let totalPage;
 import iziToast from 'izitoast';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+// ------------inport my-mod.js
+import * as mymod from './my-mod.js';
 const gallery = document.querySelector(`.gallery`);
 const loader = document.querySelector(`.loader`);
 loader.classList.remove(`loader`);
-
 const form = document.querySelector(`.form`);
-form.addEventListener(`submit`, formSearch);
-// ------------------
+
+const galleryModal = new SimpleLightbox(`.gallery .link`, {
+  captionsData: `alt`,
+  captionDelay: 250,
+});
+
+// --------------add-button-load-more----
 document
   .querySelector(`.page-section`)
   .insertAdjacentHTML(
     'beforeend',
-    `<button class="download-more">Download more</button>`
+    `<button class="download-more">Load more</button>`
   );
-const buttonMoreImages = document.querySelector(`.download-more`);
-buttonMoreImages.addEventListener(`click`, downloadsMoreImages);
-// -----------------
+const buttonLoad = document.querySelector(`.download-more`);
 
-function formSearch(event) {
+form.addEventListener(`submit`, async event => {
   event.preventDefault();
-  let userText = event.target.elements.search.value.trim();
+  userText = event.target.elements.search.value.trim();
 
   if (userText === ``) {
     iziToast.show({
-      message: '❌ Field must be filled in',
+      message: `❌ Field must be filled in`,
       position: `topRight`,
       color: `red`,
     });
     return;
   }
-
+  loader.classList.add(`loader`);
+  curentPage = 1;
   form.reset();
   gallery.innerHTML = ``;
-  buttonMoreImages.classList.remove(`is-visibal`);
+
+  try {
+    const list = await mymod.searchImageOnServer(userText, curentPage);
+    if (list.hits.lenght === 0) {
+      loader.classList.remove(`loader`);
+      iziToast.show({
+        message: `❌ Sorry, there are no images matching your search query. Please try again!`,
+        position: `topRight`,
+        color: `red`,
+      });
+      buttonLoad.classList.remove(`is-visibal`);
+      return;
+    }
+
+    loader.classList.remove(`loader`);
+    gallery.insertAdjacentHTML('afterbegin', mymod.addHtmlOnPage(list.hits));
+    galleryModal.refresh();
+
+    totalPage = Math.ceil(list.totalHits / 40);
+    if (curentPage < totalPage) {
+      buttonLoad.classList.add(`is-visibal`);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// --------------add-listener-button-----
+
+buttonLoad.addEventListener(`click`, async () => {
+  buttonLoad.classList.remove(`is-visibal`);
   loader.classList.add(`loader`);
+  curentPage++;
 
-  const parameters = new URLSearchParams({
-    key: `41274788-792c8d92905fcf9da75194117`,
-    q: `${userText}`,
-    image_type: `photo`,
-    orientation: `horizontal`,
-    safesearch: `true`,
-    per_page: 100,
-  }).toString();
+  try {
+    const list = await mymod.searchImageOnServer(userText, curentPage);
+    loader.classList.remove(`loader`);
+    gallery.insertAdjacentHTML('beforeend', mymod.addHtmlOnPage(list.hits));
+    galleryModal.refresh();
 
-  const urlSearch = `https://pixabay.com/api/?${parameters}`;
-  fetch(urlSearch)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-
-      return response.json();
-    })
-    .then(answerFromServer => {
-      if (answerFromServer.hits.length === 0) {
-        loader.classList.remove(`loader`);
-        iziToast.show({
-          message:
-            '❌ Sorry, there are no images matching your search query. Please try again!',
-          position: `topRight`,
-          color: `red`,
-        });
-        buttonMoreImages.classList.remove(`is-visibal`);
-        return;
-      }
-      galleryCreate(answerFromServer.hits);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-}
-// --------------------------------
-function galleryCreate(imageArrow) {
-  indexImage = 0;
-  objectFromServer = imageArrow;
-  let displayImage = imageArrow.slice(indexImage, indexImage + 20);
-  loader.classList.remove(`loader`);
-  gallery.insertAdjacentHTML('afterbegin', addImages(displayImage));
-  galleryModal.refresh();
-
-  if (imageArrow.length >= 21) {
-    buttonMoreImages.classList.add(`is-visibal`);
+    if (totalPage === curentPage) {
+      iziToast.show({
+        message: `We're sorry, but you've reached the end of search results.`,
+        position: `topRight`,
+        color: `blue`,
+      });
+      return;
+    }
+    buttonLoad.classList.add(`is-visibal`);
+    mymod.scroll();
+  } catch (error) {
+    console.log(error);
   }
-}
-// ----------------------------------
-
-function downloadsMoreImages() {
-  indexImage += 20;
-
-  gallery.insertAdjacentHTML(
-    'beforeend',
-    addImages(objectFromServer.slice(indexImage, indexImage + 20))
-  );
-  if (indexImage + 21 >= objectFromServer.length) {
-    buttonMoreImages.classList.remove(`is-visibal`);
-  }
-  galleryModal.refresh();
-}
-
-function addImages(arrow) {
-  let listCode = ``;
-  arrow.forEach(image => {
-    const {
-      webformatURL,
-      largeImageURL,
-      tags,
-      likes,
-      views,
-      comments,
-      downloads,
-    } = image;
-
-    listCode += `<li class="gallery-item">
-          <a class="link" href="${largeImageURL}">
-            <img class="form-img" src="${webformatURL}" alt="${tags}" />
-            <ul class="description-list">
-              <li class="description-item">
-                <p class="text-">Likes</p>
-                <p class="number">${likes}</p>
-              </li>
-              <li class="description-item">
-                <p class="text-">Views</p>
-                <p class="number">${views}</p>
-              </li>
-              <li class="description-item">
-                <p class="text-">Comments</p>
-                <p class="number">${comments}</p>
-              </li>
-              <li class="description-item">
-                <p class="text-">Downloads</p>
-                <p class="number">${downloads}</p>
-              </li>
-            </ul>
-          </a>
-        </li>`;
-  });
-  return listCode;
-}
-// ------------------------
-
-const galleryModal = new SimpleLightbox('.gallery .link', {
-  captionsData: `alt`,
-  captionDelay: 250,
 });
