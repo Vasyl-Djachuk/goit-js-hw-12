@@ -38,6 +38,7 @@ form.addEventListener(`submit`, async event => {
     });
     return;
   }
+  buttonLoad.classList.remove(`is-visibal`);
   loader.classList.add(`loader`);
   curentPage = 1;
   form.reset();
@@ -45,7 +46,8 @@ form.addEventListener(`submit`, async event => {
 
   try {
     const list = await mymod.searchImageOnServer(userText, curentPage);
-    if (list.hits.lenght === 0) {
+
+    if (list.hits.length === 0) {
       loader.classList.remove(`loader`);
       iziToast.show({
         message: `❌ Sorry, there are no images matching your search query. Please try again!`,
